@@ -32,6 +32,7 @@ A multi-agent, evidence-based, deliberately pessimistic discovery of the stronge
 | [18](18_assumption_register.md) | **Assumption register (most important for action)** |
 | [19](19_cto_handoff.md) | CTO handoff (conditional, blockchain-free) |
 | [20](20_build_readiness_gate.md) | **Final build-readiness gate** |
+| [21](21_validation_toolkit.md) | **Copy-paste field kit: outreach, call script, audit template, pilot agreement, tracking sheet** |
 
 ## Honesty note
 Research sub-agents could not fetch Reddit/G2/Capterra directly (bot-blocked); many quotes are search-snippet-sourced and many dollar magnitudes come from vendors who profit from the pain. **Frequencies and directions are well-corroborated; magnitudes are soft.** Treat this as a rigorous *hypothesis engine* that tells you exactly what to verify with ~20 real customer conversations — not a substitute for them.
