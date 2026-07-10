@@ -1,0 +1,16 @@
+# Keep personal data OUT of this PUBLIC repo. Only the reusable pipeline code
+# and the queue.html viewer are committed. Everything below stays local.
+
+# phone number, personal details
+profile.md
+# visa status, pay expectations
+preferences.md
+# your CV and letter templates
+templates/
+# jobs.csv, shortlist.csv, queue.json (application data)
+data/
+# generated per-job CVs, letters, answers
+apps/
+
+__pycache__/
+*.pyc

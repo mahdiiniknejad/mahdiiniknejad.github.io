@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JobHunter — Review Queue</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --card:#fff; --ink:#111827; --muted:#6b7280; --line:#e5e7eb;
+    --brand:#2563eb; --brandink:#fff; --good:#16a34a; --warn:#b45309; --block:#dc2626;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{--bg:#0f1115;--card:#181b22;--ink:#e8eaed;--muted:#9aa0aa;--line:#282c34;
+      --brand:#3b82f6;--good:#22c55e;--warn:#f59e0b;--block:#ef4444;}
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:var(--bg);color:var(--ink);-webkit-text-size-adjust:100%}
+  header{position:sticky;top:0;z-index:5;background:var(--card);border-bottom:1px solid var(--line);
+    padding:14px 16px;display:flex;align-items:center;gap:10px}
+  header h1{font-size:17px;margin:0;flex:1}
+  header .stat{font-size:12px;color:var(--muted)}
+  main{max-width:680px;margin:0 auto;padding:14px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:14px;margin:0 0 14px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+  .row{display:flex;align-items:center;gap:8px}
+  .title{font-weight:650;font-size:16px;margin:0}
+  .emp{color:var(--muted);font-size:14px;margin:2px 0 8px}
+  .score{margin-left:auto;font-weight:700;font-size:15px;background:var(--brand);
+    color:var(--brandink);border-radius:999px;padding:3px 10px;min-width:40px;text-align:center}
+  .tags{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+  .tag{font-size:12px;padding:2px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+  .tag.deadline{color:var(--warn);border-color:var(--warn)}
+  .status{font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px}
+  .status.READY{color:var(--good);border:1px solid var(--good)}
+  .status.BLOCKED{color:var(--block);border:1px solid var(--block)}
+  .status.SUBMITTED{color:var(--muted);border:1px solid var(--line)}
+  .why{font-size:13px;color:var(--muted);margin:6px 0}
+  .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  a.btn,button.btn{display:inline-block;text-decoration:none;font-size:14px;font-weight:600;
+    padding:9px 12px;border-radius:10px;border:1px solid var(--line);background:transparent;
+    color:var(--ink);cursor:pointer}
+  a.btn.primary{background:var(--brand);color:var(--brandink);border-color:var(--brand)}
+  details{margin-top:10px}
+  summary{cursor:pointer;font-size:14px;font-weight:600;color:var(--brand)}
+  pre.ans{white-space:pre-wrap;font:13px/1.5 ui-monospace,Menlo,monospace;
+    background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px;
+    margin-top:8px;overflow-x:auto}
+  .empty{text-align:center;color:var(--muted);padding:40px 16px}
+  .empty h2{color:var(--ink)}
+  .filebtn{margin-top:14px}
+  .demo{border-style:dashed;opacity:.85}
+  .demo-banner{background:var(--warn);color:#fff;font-size:12px;font-weight:600;
+    text-align:center;padding:6px;border-radius:8px;margin-bottom:10px}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);
+    color:var(--bg);padding:8px 16px;border-radius:999px;font-size:14px;opacity:0;
+    transition:opacity .2s;pointer-events:none}
+  .toast.show{opacity:.95}
+</style>
+</head>
+<body>
+<header>
+  <h1>📋 Review Queue</h1>
+  <span class="stat" id="stat"></span>
+</header>
+<main id="main"></main>
+<div class="toast" id="toast"></div>
+
+<script>
+const DEMO = [{
+  employer:"(EXAMPLE — not a real posting)", title:"Research Assistant — Finance",
+  score:78, deadline:"2026-07-20", status:"READY",
+  url:"", cv:"", letter:"",
+  why_fit:"matches: research assistant, python, econometric, visa-friendly employer",
+  risk_gap:"salary not stated — confirm ≥ €20/hr before applying",
+  answers:"This is a demo card showing the layout.\nReal applications appear here after you run the pipeline (scrape → score → tailor).",
+  demo:true
+}];
+
+function esc(s){return (s||"").replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),1400);}
+
+function card(j){
+  const demoBanner = j.demo ? `<div class="demo-banner">DEMO CARD — not a real job. Run the pipeline to populate.</div>` : "";
+  const links = [];
+  if(j.url) links.push(`<a class="btn primary" href="${esc(j.url)}" target="_blank" rel="noopener">Open posting ↗</a>`);
+  if(j.letter) links.push(`<a class="btn" href="${esc(j.letter)}" target="_blank">Letter PDF</a>`);
+  if(j.cv) links.push(`<a class="btn" href="${esc(j.cv)}" target="_blank">CV PDF</a>`);
+  return `<article class="card ${j.demo?'demo':''}">
+    ${demoBanner}
+    <div class="row"><p class="title">${esc(j.title)}</p><span class="score">${j.score||0}</span></div>
+    <p class="emp">${esc(j.employer)}</p>
+    <div class="tags">
+      ${j.deadline?`<span class="tag deadline">⏳ ${esc(j.deadline)}</span>`:``}
+      <span class="status ${esc(j.status)}">${esc(j.status||'READY')}</span>
+    </div>
+    ${j.why_fit?`<p class="why">✓ ${esc(j.why_fit)}</p>`:``}
+    ${j.risk_gap?`<p class="why">⚠ ${esc(j.risk_gap)}</p>`:``}
+    <div class="actions">${links.join("")}
+      <button class="btn" onclick='copyAns(this)' data-a="${encodeURIComponent(j.answers||'')}">Copy answers</button>
+    </div>
+    <details><summary>Show form answers</summary><pre class="ans">${esc(j.answers)}</pre></details>
+  </article>`;
+}
+
+function copyAns(btn){
+  const txt = decodeURIComponent(btn.dataset.a||"");
+  navigator.clipboard?.writeText(txt).then(()=>toast("Answers copied"),()=>toast("Copy failed"));
+}
+
+function render(list, isDemo){
+  const main = document.getElementById('main');
+  const stat = document.getElementById('stat');
+  if(!list || !list.length){
+    stat.textContent = "";
+    main.innerHTML = `<div class="empty"><h2>No applications yet</h2>
+      <p>Run the pipeline (<code>scrape → score → tailor</code>) to generate
+      <code>data/queue.json</code>, then reload — or load it from your device below.</p>
+      <input class="filebtn" type="file" id="pick" accept="application/json"></div>`;
+    document.getElementById('pick').addEventListener('change', loadFile);
+    return;
+  }
+  const ready = list.filter(j=>j.status==='READY').length;
+  stat.textContent = `${list.length} apps · ${ready} ready${isDemo?' · DEMO':''}`;
+  main.innerHTML = (isDemo?`<div class="empty" style="padding:14px 4px">
+      <p>Showing a <b>demo card</b>. Load your real <code>data/queue.json</code>:
+      <input type="file" id="pick" accept="application/json" style="display:block;margin:10px auto"></p></div>`:"")
+    + list.map(card).join("");
+  const pick=document.getElementById('pick'); if(pick) pick.addEventListener('change', loadFile);
+}
+
+function loadFile(e){
+  const f = e.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = () => { try{ render(JSON.parse(r.result), false); toast("Queue loaded"); }
+                     catch(_){ toast("Invalid JSON"); } };
+  r.readAsText(f);
+}
+
+fetch('data/queue.json',{cache:'no-store'})
+  .then(r=>r.ok?r.json():Promise.reject())
+  .then(d=>render(d,false))
+  .catch(()=>render(DEMO,true));
+</script>
+</body>
+</html>

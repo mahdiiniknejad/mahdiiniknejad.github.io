@@ -1,0 +1,85 @@
+# Stage 1 source config. Selectors are best-effort starting points — job boards
+# change markup, so if a source returns 0 cards, open it in a browser, inspect,
+# and update the *_selector fields below. Search URLs use the target roles from
+# preferences.md (finance / research / data / quant / fintech, Ireland).
+#
+# High-conversion, automation-tolerant sources are enabled by default. LinkedIn
+# and Indeed are left disabled: they aggressively block automation and violate
+# their terms when scraped — read those manually or via their official feeds.
+
+sources:
+  - name: jobs_ac
+    enabled: true
+    base: https://www.jobs.ac.uk
+    search_urls:
+      - https://www.jobs.ac.uk/search/?keywords=finance&location=Ireland
+      - https://www.jobs.ac.uk/search/?keywords=economics&location=Ireland
+      - https://www.jobs.ac.uk/search/?keywords=research%20assistant&location=Ireland
+    card_selector: "div.j-search-result__text"
+    title_selector: "a.j-search-result__title, h3 a"
+    link_selector: "a.j-search-result__title, h3 a"
+    employer_selector: ".j-search-result__department, .employer"
+    location_selector: ".j-search-result__location"
+    salary_selector: ".j-search-result__info li"
+    deadline_selector: ".j-search-result__closing"
+    detail_selector: "#job-description, .j-advert__main, main"
+
+  - name: university_vacancies
+    enabled: true
+    base: https://www.universityvacancies.com
+    search_urls:
+      - https://www.universityvacancies.com/search?q=finance
+      - https://www.universityvacancies.com/search?q=research+assistant
+      - https://www.universityvacancies.com/search?q=data+analyst
+    card_selector: ".job-listing, .vacancy, article"
+    title_selector: "h2 a, h3 a, .job-title a"
+    link_selector: "h2 a, h3 a, .job-title a"
+    employer_selector: ".institution, .employer, .company"
+    location_selector: ".location"
+    salary_selector: ".salary"
+    deadline_selector: ".closing-date, .deadline"
+    detail_selector: ".job-description, main, article"
+
+  - name: ucd_workatucd
+    enabled: true
+    base: https://www.ucd.ie
+    default_employer: University College Dublin
+    search_urls:
+      - https://www.ucd.ie/workatucd/jobs/
+    card_selector: "table tr, .job-row, li.vacancy"
+    title_selector: "a"
+    link_selector: "a"
+    location_selector: ".location"
+    salary_selector: ".salary"
+    deadline_selector: ".closing"
+    detail_selector: "main, #content, article"
+
+  - name: irishjobs
+    enabled: true
+    base: https://www.irishjobs.ie
+    search_urls:
+      - https://www.irishjobs.ie/jobs/finance/in-dublin
+      - https://www.irishjobs.ie/jobs/data-analyst/in-dublin
+    card_selector: "[data-testid='job-item'], .job, article.result"
+    title_selector: "h2 a, a[data-testid='job-item-title']"
+    link_selector: "h2 a, a[data-testid='job-item-title']"
+    employer_selector: "[data-testid='company-name'], .company"
+    location_selector: "[data-testid='location'], .location"
+    salary_selector: "[data-testid='salary'], .salary"
+    detail_selector: "[data-testid='job-description'], main, article"
+
+  # --- disabled: scraping violates their terms / hard bot-blocking ---
+  - name: linkedin
+    enabled: false
+    base: https://www.linkedin.com
+    search_urls: []
+    card_selector: ""
+    title_selector: ""
+    link_selector: ""
+  - name: indeed
+    enabled: false
+    base: https://ie.indeed.com
+    search_urls: []
+    card_selector: ""
+    title_selector: ""
+    link_selector: ""
