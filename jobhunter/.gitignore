@@ -11,6 +11,8 @@ templates/
 data/
 # generated per-job CVs, letters, answers
 apps/
+# self-contained queue page with embedded application data (referees, answers)
+queue_standalone.html
 
 __pycache__/
 *.pyc
